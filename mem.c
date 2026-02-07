@@ -1,4 +1,5 @@
 #include <sys/mman.h>
+#include <stdio.h>
 #include <stddef.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -64,3 +65,31 @@ int virt2phy(struct hw *hw, volatile u8 *trace)
     hw->rx_base_phy = paddr;
     return 0;
 };
+/*
+ * Implement memory map to access NIC registers from userspace.
+ */
+int mmap_bar0(struct hw *hw, volatile u8 *trace)
+{
+    if (likely(trace)) {
+        (*trace)++;
+    };
+    char path [128];
+    snprintf(path, sizeof(path),
+     "/sys/bus/pci/devices/%s/resource0", hw->pci_addr);
+    int fd = open(path, O_RDWR | O_SYNC);
+    /* O_SYNC flag ensures that we can edit NIC registers instantly.
+    Without it, CPU may couse latency between ;
+    editing register on userspace - writing to NIC. */
+    if (unlikely(fd < 0)) 
+        return -1;
+    void *mmio = mmap(NULL, 128 * 1024, 
+        PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    close(fd);
+    if (unlikely(mmio == MAP_FAILED))
+        return -1;
+    hw->hw_addr = mmio;
+    if (likely(trace)) {
+        (*trace)++;
+    };
+    return 0;
+}; 

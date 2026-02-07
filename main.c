@@ -26,5 +26,9 @@ int main(int argc, char **argv){
     if (unlikely(err != 0)){
         return -err;
     }
+    err = mmap_bar0(&ixgbbe_adapter,&debug_trace.mmap_bar0_counter);
+    if (unlikely(err != 0)){
+        return -err;
+    }
 };
 
