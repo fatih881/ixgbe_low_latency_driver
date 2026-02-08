@@ -1,5 +1,5 @@
 CC = gcc 
-CFLAGS = -O3 -march=native -fomit-frame-pointer -Wall -Wextra
+CFLAGS = -g -O0 -march=native -fomit-frame-pointer -Wall -Wextra
 SRC = $(wildcard *.c)
 OBJ = $(SRC:.c=.o)
 TARGET = driver
