@@ -19,6 +19,7 @@ struct trace
     volatile u8 alloc_hugepage_counter;
     volatile u8 virt2phy_counter;
     volatile u8 mmap_bar0_counter;
+    volatile u8 probe_counter;
 };
 extern struct trace debug_trace;
 

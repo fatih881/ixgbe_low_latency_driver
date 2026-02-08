@@ -2,6 +2,8 @@
 #include "hw.h"
 #include "pci.h"
 #include <unistd.h>
+
+#include "ixgbe.h"
 struct trace debug_trace __attribute__((aligned(64))) = {0};
 struct hw ixgbe_adapter __attribute__((aligned(64))) = {0};
 
@@ -26,6 +28,10 @@ int main(const int argc, char **argv){
         return -err;
     }
     err = mmap_bar0(&ixgbe_adapter,&debug_trace.mmap_bar0_counter);
+    if (unlikely(err != 0)){
+        return -err;
+    }
+    err = ixgbe_probe(&ixgbe_adapter,&debug_trace.probe_counter);
     if (unlikely(err != 0)){
         return -err;
     }
