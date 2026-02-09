@@ -36,7 +36,7 @@ eeprom_ok:
     usleep(1000);
   }
   if (unlikely((i == 50))) return -1;
-dmaiok:
+dmaiok:;
   /*  Proof Of Progress */
   const u32 ledctl = ixgbe_read_reg(hw, IXGBE_LEDCTL);
   const u32 blink = IXGBE_LED_CONF(0, 0x8E) | IXGBE_LED_CONF(1, 0x8E) |

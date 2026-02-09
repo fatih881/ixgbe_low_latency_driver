@@ -1,5 +1,6 @@
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -35,12 +36,17 @@ int virt2phy(struct hw* hw, volatile u8* trace) {
     (*trace)++;
   };
   const u64 v_addr = (u64)hw->rx_base;
-  const u64 index = v_addr / sysconf(_SC_PAGESIZE);
+  const long pagesize = sysconf(_SC_PAGESIZE);
+  if (unlikely(pagesize <= 0)) return -1;
+  const u64 index = v_addr / (u64)pagesize;
 
   const int fd = open("/proc/self/pagemap", O_RDONLY);
   u64 result;
 
-  if (unlikely(fd < 0)) return -1;
+  if (unlikely(fd < 0)) {
+    close(fd);
+    return -1;
+  }
   if (unlikely(lseek(fd, index * sizeof(u64), SEEK_SET) < 0)) {
     close(fd);
     return -1;
@@ -54,8 +60,8 @@ int virt2phy(struct hw* hw, volatile u8* trace) {
   if (unlikely(!(result & (1ULL << 63)))) {
     return -1;
   }
-  u64 paddr = (result & ((1ULL << 55) - 1)) * sysconf(_SC_PAGESIZE);
-  paddr += v_addr % sysconf(_SC_PAGESIZE);
+  u64 paddr = (result & ((1ULL << 55) - 1)) * (u64)pagesize;
+  paddr += v_addr % (u64)pagesize;
   if (likely(trace)) {
     (*trace)++;
   };
@@ -76,7 +82,10 @@ int mmap_bar0(struct hw* hw, volatile u8* trace) {
   /* O_SYNC flag ensures that we can edit NIC registers instantly.
   Without it, CPU may cause latency between ;
   editing register on userspace - writing to NIC. */
-  if (unlikely(fd < 0)) return -1;
+  if (unlikely(fd < 0)) {
+    close(fd);
+    return -1;
+  }
   void* mmio =
       mmap(NULL, 128 * 1024, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   close(fd);
