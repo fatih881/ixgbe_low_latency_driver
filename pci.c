@@ -22,7 +22,6 @@ int unbind(const char* pci, const char* target_drv) {
 
   fd = open(path, O_WRONLY);
   if (unlikely(fd < 0)) {
-    close(fd);
     return -1;
   }
   char buf[64];
@@ -43,7 +42,6 @@ int unbind(const char* pci, const char* target_drv) {
 
   fd = open("/sys/bus/pci/drivers_probe", O_WRONLY);
   if (unlikely(fd < 0)) {
-    close(fd);
     return -2;
   }
   write(fd, pci, strnlen(pci, 64));

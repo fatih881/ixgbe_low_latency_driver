@@ -35,7 +35,6 @@ int virt2phy(struct hw* hw) {
   u64 result;
 
   if (unlikely(fd < 0)) {
-    close(fd);
     return -1;
   }
   if (unlikely(lseek(fd, index * sizeof(u64), SEEK_SET) < 0)) {
@@ -71,7 +70,6 @@ int mmap_bar0(struct hw* hw) {
   Without it, CPU may cause latency between ;
   editing register on userspace - writing to NIC. */
   if (unlikely(fd < 0)) {
-    close(fd);
     return -1;
   }
   void* mmio =

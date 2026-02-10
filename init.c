@@ -17,7 +17,7 @@ int ixgbe_probe(const struct hw* hw) {
   ixgbe_write_reg(hw, IXGBE_CTRL, ctrl);
   usleep(10000);
   err = ixgbe_read_reg(hw, IXGBE_CTRL);
-  if (unlikely((err & IXGBE_CTRL_RST) | (err & IXGBE_CTRL_LRST))) return -1;
+  if (unlikely(err & (IXGBE_CTRL_RST | IXGBE_CTRL_LRST))) return -1;
   u8 i;
   for (i = 0; i < 50; i++) {
     const u32 eeprom = ixgbe_read_reg(hw, IXGBE_EEC);
