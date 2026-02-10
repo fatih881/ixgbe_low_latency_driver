@@ -6,10 +6,7 @@
 /*
  * Writing registers following 82599 datasheet page 166.
  */
-int ixgbe_probe(const struct hw* hw, volatile u8* trace) {
-  if (likely(trace)) {
-    (*trace)++;
-  };
+int ixgbe_probe(const struct hw* hw) {
   /* Disable Interrupts */
   ixgbe_write_reg(hw, IXGBE_EIMC, 0x7FFFFFFF);
   u32 err = ixgbe_read_reg(hw, IXGBE_EIMS);
@@ -20,7 +17,7 @@ int ixgbe_probe(const struct hw* hw, volatile u8* trace) {
   ixgbe_write_reg(hw, IXGBE_CTRL, ctrl);
   usleep(10000);
   err = ixgbe_read_reg(hw, IXGBE_CTRL);
-  if (unlikely((err & IXGBE_CTRL_RST) | (err & IXGBE_CTRL_LRST))) return -1;
+  if (unlikely(err & (IXGBE_CTRL_RST | IXGBE_CTRL_LRST))) return -1;
   u8 i;
   for (i = 0; i < 50; i++) {
     const u32 eeprom = ixgbe_read_reg(hw, IXGBE_EEC);
@@ -56,8 +53,5 @@ dmaiok:;
    * light. The LEDs are not blinked since they're blinking with traffic, and we
    * don't have one. This means all the previous configurations are successful.
    */
-  if (likely(trace)) {
-    (*trace)++;
-  };
   return 0;
 }
