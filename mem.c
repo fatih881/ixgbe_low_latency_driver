@@ -60,8 +60,8 @@ int virt2phy(struct hw* hw) {
  */
 int mmap_bar0(struct hw* hw) {
   char path[128];
-  const int len = snprintf(path, sizeof(path), "/sys/bus/pci/devices/%s/resource0",
-           hw->pci_addr);
+  const int len = snprintf(path, sizeof(path),
+                           "/sys/bus/pci/devices/%s/resource0", hw->pci_addr);
   if (unlikely(len < 0 || (size_t)len >= sizeof(path))) {
     return -1;
   }

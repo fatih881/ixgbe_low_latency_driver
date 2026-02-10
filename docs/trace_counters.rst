@@ -5,7 +5,7 @@ This tracing system is deprecated because:
   - Modern debuggers provide full visibility into exit paths and return codes.
   - The instrumentation is not used in the data path, and direct write syscalls are sufficient for initialization logging.
 
-Successor solution will be added in future commits.
+A Successor solution will be added in future commits.
 Summary
 =======
 
