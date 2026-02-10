@@ -14,7 +14,8 @@ int unbind(const char* pci, const char* target_drv) {
   const size_t pci_len = strnlen(pci, 64);
   if (unlikely(pci_len >= 64)) return -1;
   if (unlikely(target_drv == NULL || strnlen(target_drv, 64) >= 64)) return -1;
-  int len = snprintf(path, sizeof(path), "/sys/bus/pci/devices/%s/driver/unbind", pci);
+  int len = snprintf(path, sizeof(path),
+                     "/sys/bus/pci/devices/%s/driver/unbind", pci);
   if (unlikely((len < 0 || (size_t)len >= sizeof(path)))) {
     return -1;
   }
@@ -27,7 +28,8 @@ int unbind(const char* pci, const char* target_drv) {
     }
     close(fd);
   }
-  len = snprintf(path, sizeof(path), "/sys/bus/pci/devices/%s/driver_override", pci);
+  len = snprintf(path, sizeof(path), "/sys/bus/pci/devices/%s/driver_override",
+                 pci);
   if (unlikely((len < 0 || (size_t)len >= sizeof(path)))) {
     return -1;
   }
