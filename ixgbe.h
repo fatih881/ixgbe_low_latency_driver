@@ -223,6 +223,6 @@ static inline void ixgbe_write_reg(const struct hw* hw, const u32 reg,
                                    const u32 val) {
   *((volatile u32*)(hw->hw_addr + reg)) = val;
 }
-int ixgbe_probe(const struct hw* hw, volatile u8* trace);
+int ixgbe_probe(const struct hw* hw);
 
 #endif

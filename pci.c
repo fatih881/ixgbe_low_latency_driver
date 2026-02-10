@@ -7,10 +7,7 @@
 /*
  * Taking the device from kernel's control and binds to target_drv.
  */
-int unbind(const char* pci, const char* target_drv, volatile u8* trace) {
-  if (likely(trace)) {
-    (*trace)++;
-  }
+int unbind(const char* pci, const char* target_drv) {
   char path[128];
   if (unlikely(pci == NULL || strnlen(pci, 64) >= 64)) return -1;
   if (unlikely(target_drv == NULL || strnlen(target_drv, 64) >= 64)) return -1;
@@ -52,8 +49,5 @@ int unbind(const char* pci, const char* target_drv, volatile u8* trace) {
   write(fd, pci, strnlen(pci, 64));
   close(fd);
 
-  if (likely(trace)) {
-    (*trace)++;
-  }
   return 0;
 }

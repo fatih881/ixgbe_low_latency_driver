@@ -4,7 +4,6 @@
 #include "hw.h"
 #include "ixgbe.h"
 #include "pci.h"
-struct trace debug_trace __attribute__((aligned(64))) = {0};
 struct hw ixgbe_adapter __attribute__((aligned(64))) = {0};
 
 int main(const int argc, char** argv) {
@@ -18,24 +17,23 @@ int main(const int argc, char** argv) {
   }
   ixgbe_adapter.pci_addr = argv[1];
   // Driver should be changed for another PCI direct access modes.
-  int err = unbind(ixgbe_adapter.pci_addr, "uio_pci_generic",
-                   &debug_trace.unbind_counter);
+  int err = unbind(ixgbe_adapter.pci_addr, "uio_pci_generic");
   if (unlikely(err != 0)) {
     return -err;
   }
-  err = alloc_hugepage(&ixgbe_adapter, &debug_trace.alloc_hugepage_counter);
+  err = alloc_hugepage(&ixgbe_adapter);
   if (unlikely(err != 0)) {
     return -err;
   }
-  err = virt2phy(&ixgbe_adapter, &debug_trace.virt2phy_counter);
+  err = virt2phy(&ixgbe_adapter);
   if (unlikely(err != 0)) {
     return -err;
   }
-  err = mmap_bar0(&ixgbe_adapter, &debug_trace.mmap_bar0_counter);
+  err = mmap_bar0(&ixgbe_adapter);
   if (unlikely(err != 0)) {
     return -err;
   }
-  err = ixgbe_probe(&ixgbe_adapter, &debug_trace.probe_counter);
+  err = ixgbe_probe(&ixgbe_adapter);
   if (unlikely(err != 0)) {
     return -err;
   }

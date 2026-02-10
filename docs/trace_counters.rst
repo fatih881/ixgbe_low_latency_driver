@@ -1,3 +1,10 @@
+==========
+DEPRECATED
+==========
+This tracing system has been deprecated because of;
+    - If you use debugger, you can know where the code exited with return code without this traces,
+    - Even if it's not deprecated, it'll not used in data path, and we can use write syscall on init.
+Successor solution will be added in next commits.
 Summary
 =======
 

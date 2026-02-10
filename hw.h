@@ -13,16 +13,8 @@ struct hw {
   volatile u32* rdh_reg_addr;
 };
 extern struct hw ixgbe_adapter;
-struct trace {
-  volatile u8 unbind_counter;
-  volatile u8 alloc_hugepage_counter;
-  volatile u8 virt2phy_counter;
-  volatile u8 mmap_bar0_counter;
-  volatile u8 probe_counter;
-};
-extern struct trace debug_trace;
 
-int alloc_hugepage(struct hw* hw, volatile u8* trace);
-int virt2phy(struct hw* hw, volatile u8* trace);
-int mmap_bar0(struct hw* hw, volatile u8* trace);
+int alloc_hugepage(struct hw* hw);
+int virt2phy(struct hw* hw);
+int mmap_bar0(struct hw* hw);
 #endif
