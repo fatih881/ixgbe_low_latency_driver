@@ -1,5 +1,3 @@
-#include <stddef.h>
-
 #include "../src/hw.h"
 #include "../src/ixgbe.h"
 #include "selftests.h"
@@ -9,8 +7,8 @@
  * For now, it's using LED registers.
  */
 int ixgbe_run_diagnostic(const struct hw* hw) {
-  const int err = ixgbe_test_mmio(hw);
-  if (unlikely(err != 0)) return err;
+  const int read_val = ixgbe_test_mmio(hw);
+  if (unlikely(read_val != 0)) return read_val;
   return 0;
 }
 /*
@@ -21,15 +19,18 @@ int ixgbe_run_diagnostic(const struct hw* hw) {
  */
 int ixgbe_test_mmio(const struct hw* hw) {
   const u32 origin_state = ixgbe_read_reg(hw, IXGBE_LEDCTL);
-  if (unlikely(origin_state == 0)) return -1;
+  if (unlikely(origin_state == 0xFFFFFFFF)) return -1;
   const u32 ledtest = IXGBE_LED_CONF(0, 0x8E) | IXGBE_LED_CONF(1, 0x8E) |
                       IXGBE_LED_CONF(2, 0x8E) | IXGBE_LED_CONF(3, 0x8E);
   ixgbe_write_reg(hw, IXGBE_LEDCTL, ledtest);
-  u32 err = ixgbe_read_reg(hw, IXGBE_LEDCTL);
-  if (unlikely((err & IXGBE_LED_RW_MASK) != (ledtest & IXGBE_LED_RW_MASK)))
+  u32 read_val = ixgbe_read_reg(hw, IXGBE_LEDCTL);
+  if (unlikely((read_val & IXGBE_LED_RW_MASK) !=
+               (ledtest & IXGBE_LED_RW_MASK))) {
+    ixgbe_write_reg(hw, IXGBE_LEDCTL, origin_state);
     return -1;
+  }
   ixgbe_write_reg(hw, IXGBE_LEDCTL, origin_state);
-  err = ixgbe_read_reg(hw, IXGBE_LEDCTL);
-  if (unlikely((err != origin_state))) return -1;
+  read_val = ixgbe_read_reg(hw, IXGBE_LEDCTL);
+  if (unlikely((read_val != origin_state))) return -1;
   return 0;
 }
