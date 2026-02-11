@@ -1,6 +1,6 @@
 CC = gcc 
 CFLAGS = -g -O0 -march=native -fomit-frame-pointer -Wall -Wextra
-SRC = $(wildcard *.c)
+SRC = $(shell find . -name '*.c')
 OBJ = $(SRC:.c=.o)
 TARGET = driver
 
@@ -10,6 +10,7 @@ $(TARGET): $(OBJ)
 	$(CC) $(CFLAGS) -o $@ $^
 
 clean:
-	rm -f *.o $(TARGET)
+	find . -name '*.o' -delete
+	rm -f $(TARGET)
 
 .PHONY: all clean

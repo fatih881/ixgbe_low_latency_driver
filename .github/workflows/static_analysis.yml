@@ -23,4 +23,4 @@ jobs:
       - name: cppcheck
         run: cppcheck --enable=warning,performance,portability --error-exitcode=1 --suppress=missingIncludeSystem -I . .
       - name: check style
-        run: clang-format -style=Google -n *.c *.h
+        run: clang-format -style=Google -n $(find . -name '*.c')
