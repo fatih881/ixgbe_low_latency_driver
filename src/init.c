@@ -35,24 +35,5 @@ eeprom_ok:
   }
   if (unlikely(i == 50)) return -ETIMEDOUT;
 dmaiok:;
-  /*  Proof Of Progress */
-  const u32 ledctl = ixgbe_read_reg(hw, IXGBE_LEDCTL);
-  const u32 blink = IXGBE_LED_CONF(0, 0x8E) | IXGBE_LED_CONF(1, 0x8E) |
-                    IXGBE_LED_CONF(2, 0x8E) | IXGBE_LED_CONF(3, 0x8E);
-  ixgbe_write_reg(hw, IXGBE_LEDCTL, blink);
-  err = ixgbe_read_reg(hw, IXGBE_LEDCTL);
-  if (unlikely((err & IXGBE_LED_RW_MASK) != (blink & IXGBE_LED_RW_MASK)))
-    return -EIO;
-  sleep(10);
-  ixgbe_write_reg(hw, IXGBE_LEDCTL, ledctl);
-  err = ixgbe_read_reg(hw, IXGBE_LEDCTL);
-  if (unlikely(err != ledctl)) return -EIO;
-  /*
-   * LEDCTL part is temporary, added for proving the work.
-   * findings are;
-   * Since we are managing 1 port, the second port's LED's didn't turn on green
-   * light. The LEDs are not blinked since they're blinking with traffic, and we
-   * don't have one. This means all the previous configurations are successful.
-   */
   return 0;
 }
