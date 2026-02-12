@@ -30,21 +30,22 @@ int unbind(const char* pci, const char* target_drv) {
       return -(save_errno ? save_errno : EIO);
     }
     close(fd);
-  }
+  } else
+    return -EINVAL;
   len = snprintf(path, sizeof(path), "/sys/bus/pci/devices/%s/driver_override",
                  pci);
   if (unlikely(len < 0)) return -EINVAL;
   if (unlikely((size_t)len >= sizeof(path))) return -ENAMETOOLONG;
   fd = open(path, O_WRONLY);
   if (unlikely(fd < 0)) {
-    return -errno;
+    return -(errno ? errno : EIO);
   }
   char buf[64];
   len = snprintf(buf, sizeof(buf), "%s\n", target_drv);
   if (unlikely(len < 0)) {
     close(fd);
     return -EINVAL;
-  };
+  }
   if (unlikely((size_t)len >= sizeof(buf))) {
     close(fd);
     return -ENAMETOOLONG;
@@ -59,7 +60,7 @@ int unbind(const char* pci, const char* target_drv) {
   close(fd);
 
   fd = open("/sys/bus/pci/drivers_probe", O_WRONLY);
-  if (unlikely(fd < 0)) return -errno;
+  if (unlikely(fd < 0)) return (errno ? errno : EIO);
   w = write(fd, pci, pci_len);
   if (unlikely(w != (ssize_t)pci_len)) {
     save_errno = errno;

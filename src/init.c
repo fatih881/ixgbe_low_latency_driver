@@ -25,7 +25,7 @@ int ixgbe_probe(const struct hw* hw) {
     if (eeprom & IXGBE_EEC_ARD) goto eeprom_ok;
     usleep(1000);
   }
-  if (unlikely((i == 50))) return -ENODEV;
+  if (unlikely(i == 50)) return -ENODEV;
 eeprom_ok:
   /* EEPROM read duration is 20ms at max */
   for (i = 0; i < 50; i++) {
@@ -33,7 +33,7 @@ eeprom_ok:
     if (dmaidone & IXGBE_RDRXCTL_DMAIDONE) goto dmaiok;
     usleep(1000);
   }
-  if (unlikely((i == 50))) return -ETIMEDOUT;
+  if (unlikely(i == 50)) return -ETIMEDOUT;
 dmaiok:;
   /*  Proof Of Progress */
   const u32 ledctl = ixgbe_read_reg(hw, IXGBE_LEDCTL);
@@ -46,7 +46,7 @@ dmaiok:;
   sleep(10);
   ixgbe_write_reg(hw, IXGBE_LEDCTL, ledctl);
   err = ixgbe_read_reg(hw, IXGBE_LEDCTL);
-  if (unlikely((err != ledctl))) return -EIO;
+  if (unlikely(err != ledctl)) return -EIO;
   /*
    * LEDCTL part is temporary, added for proving the work.
    * findings are;

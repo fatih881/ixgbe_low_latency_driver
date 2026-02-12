@@ -14,23 +14,32 @@ enforce a strict separation between the hot path and cold path.
 In future commits, an error path will be implemented for providing raw data on error state,
 such as NIC register's state.
 According to current plans, this implementation includes ;
+
 - EEPROM state,
 - Link State,
 - Ring buffer State.
 
 In or before implementation, this plans may be refactored.
+
 Branch Prediction and Layout Optimization
 -----------------------------------------
 
-Within the usage of unlikely macro, return instructions are pushed to the end of binary,
-which prevents I-cache misses and provides pipeline prefetching.
+The driver leverages the unlikely macro to explicitly separate the hot path from
+error handling logic. This provides several architectural advantages:
+Instruction cache efficiency : Compiler pushes error return instructions
+to the end of the binary, which provides reducing I-cache misses.
+Branch merging: Multiple error branches jumps to same error code,which reduces
+instruction footprint. This optimization doesn't provided by branch prediction logic,
+but with the leverage of unlikely macros, it's increasing the leverage of it.
+Pipeline prefetching: By keeping the happy path linear, we provided a wanted condition
+for CPU prefetcher to subsequent instructions into the pipeline without interrupting with
+branches.
 Branch prediction is also mentioned in :ref:`happy_path_logic`,
 Below title 'Happy path is fast, error path is not'.
-Also with branch-merging,
-same return instructions are compiled as one and jumps are pointed to the same instruction.
 Within the examination of a function with objdump, it can be proven.
 Used command : 'objdump -d src/init.o'
 .. code-block:: console
+
     src/init.o:     file format elf64-x86-64
 
 
