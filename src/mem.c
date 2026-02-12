@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,11 +12,13 @@
  * kernel. Writes virtual mem addr to rx_base in hw structure.
  */
 int alloc_hugepage(struct hw* hw) {
+  int save_errno;
   void* dma = mmap(NULL, 2 * 1024 * 1024, PROT_READ | PROT_WRITE,
                    MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB, -1, 0);
   if (unlikely(dma == MAP_FAILED)) {
+    save_errno = errno;
     write(2, "mmap failed\n", 12);
-    return -1;
+    return -save_errno;
   };
   memset(dma, 0, 2 * 1024 * 1024);
   hw->rx_base = dma;
@@ -26,29 +29,34 @@ int alloc_hugepage(struct hw* hw) {
  * it needs to be converted to physical addr to use on NIC.
  */
 int virt2phy(struct hw* hw) {
+  int save_errno;
   const u64 v_addr = (u64)hw->rx_base;
   const long pagesize = sysconf(_SC_PAGESIZE);
-  if (unlikely(pagesize <= 0)) return -1;
+  if (unlikely(pagesize <= 0)) return -errno;
   const u64 index = v_addr / (u64)pagesize;
 
   const int fd = open("/proc/self/pagemap", O_RDONLY);
   u64 result;
 
   if (unlikely(fd < 0)) {
-    return -1;
+    return -errno;
   }
   if (unlikely(lseek(fd, index * sizeof(u64), SEEK_SET) < 0)) {
+    save_errno = errno;
     close(fd);
-    return -1;
+    return -save_errno;
   }
   if (unlikely(read(fd, &result, sizeof(result)) != sizeof(result))) {
+    save_errno = errno;
     close(fd);
-    return -1;
+    return -(save_errno ? save_errno : EIO);
   }
   close(fd);
   // Checks is the addr is in ram or not. ( Swap Etc. )
   if (unlikely(!(result & (1ULL << 63)))) {
-    return -1;
+    /* Couldn't return errno since swapped memory is not an error, but unusable
+     * for our workflow. */
+    return -EFAULT;
   }
   u64 paddr = (result & ((1ULL << 55) - 1)) * (u64)pagesize;
   paddr += v_addr % (u64)pagesize;
@@ -63,20 +71,21 @@ int mmap_bar0(struct hw* hw) {
   const int len = snprintf(path, sizeof(path),
                            "/sys/bus/pci/devices/%s/resource0", hw->pci_addr);
   if (unlikely(len < 0 || (size_t)len >= sizeof(path))) {
-    return -1;
+    return -EINVAL;
   }
   const int fd = open(path, O_RDWR | O_SYNC);
   /* O_SYNC flag ensures that we can edit NIC registers instantly.
   Without it, CPU may cause latency between ;
   editing register on userspace - writing to NIC. */
   if (unlikely(fd < 0)) {
-    return -1;
+    return -errno;
   }
   void* mmio =
       mmap(NULL, 128 * 1024, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  int save_errno = errno;
   close(fd);
   if (unlikely(mmio == MAP_FAILED)) {
-    return -1;
+    return -save_errno;
   }
   hw->hw_addr = mmio;
   return 0;

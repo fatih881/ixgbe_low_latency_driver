@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <unistd.h>
 
 #include "base.h"
@@ -10,21 +11,21 @@ int ixgbe_probe(const struct hw* hw) {
   /* Disable Interrupts */
   ixgbe_write_reg(hw, IXGBE_EIMC, 0x7FFFFFFF);
   u32 err = ixgbe_read_reg(hw, IXGBE_EIMS);
-  if (unlikely(err != 0)) return -1;
+  if (unlikely(err != 0)) return -EIO;
   /* Global Reset */
   u32 ctrl = ixgbe_read_reg(hw, IXGBE_CTRL);
   ctrl |= (IXGBE_CTRL_RST | IXGBE_CTRL_LRST);
   ixgbe_write_reg(hw, IXGBE_CTRL, ctrl);
   usleep(10000);
   err = ixgbe_read_reg(hw, IXGBE_CTRL);
-  if (unlikely(err & (IXGBE_CTRL_RST | IXGBE_CTRL_LRST))) return -1;
+  if (unlikely(err & (IXGBE_CTRL_RST | IXGBE_CTRL_LRST))) return -ETIMEDOUT;
   u8 i;
   for (i = 0; i < 50; i++) {
     const u32 eeprom = ixgbe_read_reg(hw, IXGBE_EEC);
     if (eeprom & IXGBE_EEC_ARD) goto eeprom_ok;
     usleep(1000);
   }
-  if (unlikely((i == 50))) return -1;
+  if (unlikely((i == 50))) return -ENODEV;
 eeprom_ok:
   /* EEPROM read duration is 20ms at max */
   for (i = 0; i < 50; i++) {
@@ -32,7 +33,7 @@ eeprom_ok:
     if (dmaidone & IXGBE_RDRXCTL_DMAIDONE) goto dmaiok;
     usleep(1000);
   }
-  if (unlikely((i == 50))) return -1;
+  if (unlikely((i == 50))) return -ETIMEDOUT;
 dmaiok:;
   /*  Proof Of Progress */
   const u32 ledctl = ixgbe_read_reg(hw, IXGBE_LEDCTL);
@@ -41,11 +42,11 @@ dmaiok:;
   ixgbe_write_reg(hw, IXGBE_LEDCTL, blink);
   err = ixgbe_read_reg(hw, IXGBE_LEDCTL);
   if (unlikely((err & IXGBE_LED_RW_MASK) != (blink & IXGBE_LED_RW_MASK)))
-    return -1;
+    return -EIO;
   sleep(10);
   ixgbe_write_reg(hw, IXGBE_LEDCTL, ledctl);
   err = ixgbe_read_reg(hw, IXGBE_LEDCTL);
-  if (unlikely((err != ledctl))) return -1;
+  if (unlikely((err != ledctl))) return -EIO;
   /*
    * LEDCTL part is temporary, added for proving the work.
    * findings are;

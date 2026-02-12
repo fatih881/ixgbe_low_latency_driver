@@ -39,7 +39,7 @@ for descriptor data structures. Title 7.1.6 , Advanced Receive Descriptors).
 
 As can be seen on the name of the document, this optimizations are like
 "low latency 101" class.
-
+.. _happy_path_logic:
 Happy path is fast, error path is not
 -------------------------------------
 In this implementation, happy paths are implemented as likely for static branch prediction. 

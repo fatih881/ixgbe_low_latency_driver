@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <unistd.h>
 
 #include "base.h"
@@ -10,10 +11,10 @@ int main(const int argc, char** argv) {
   if (unlikely(argc < 2)) {
     write(STDERR_FILENO,
           "usage: ./binary <pci_addr>. use lspci for PCI addr.\n", 52);
-    return -1;
+    return -EINVAL;
   }
   if (unlikely(argv[1] == NULL)) {
-    return -1;
+    return -EINVAL;
   }
   ixgbe_adapter.pci_addr = argv[1];
   // Driver should be changed for another PCI direct access modes.

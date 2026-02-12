@@ -1,3 +1,5 @@
+#include <errno.h>
+
 #include "../src/hw.h"
 #include "../src/ixgbe.h"
 #include "selftests.h"
@@ -19,7 +21,7 @@ int ixgbe_run_diagnostic(const struct hw* hw) {
  */
 int ixgbe_test_mmio(const struct hw* hw) {
   const u32 origin_state = ixgbe_read_reg(hw, IXGBE_LEDCTL);
-  if (unlikely(origin_state == 0xFFFFFFFF)) return -1;
+  if (unlikely(origin_state == 0xFFFFFFFF)) return -ENODEV;
   const u32 ledtest = IXGBE_LED_CONF(0, 0x8E) | IXGBE_LED_CONF(1, 0x8E) |
                       IXGBE_LED_CONF(2, 0x8E) | IXGBE_LED_CONF(3, 0x8E);
   ixgbe_write_reg(hw, IXGBE_LEDCTL, ledtest);
@@ -27,10 +29,10 @@ int ixgbe_test_mmio(const struct hw* hw) {
   if (unlikely((read_val & IXGBE_LED_RW_MASK) !=
                (ledtest & IXGBE_LED_RW_MASK))) {
     ixgbe_write_reg(hw, IXGBE_LEDCTL, origin_state);
-    return -1;
+    return -EIO;
   }
   ixgbe_write_reg(hw, IXGBE_LEDCTL, origin_state);
   read_val = ixgbe_read_reg(hw, IXGBE_LEDCTL);
-  if (unlikely((read_val != origin_state))) return -1;
+  if (unlikely((read_val != origin_state))) return -EIO;
   return 0;
 }
