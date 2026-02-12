@@ -37,8 +37,7 @@ So, CPU will poll the descriptor done bit until it becomes 1 (see
 `82599 Datasheet <https://www.intel.com/content/www/us/en/content-details/331520/intel-82599-10-gigabit-ethernet-controller-datasheet.html>`_
 for descriptor data structures. Title 7.1.6 , Advanced Receive Descriptors).
 
-As can be seen on the name of the document, this optimizations are like
-"low latency 101" class.
+.. _happy_path_logic:
 
 Happy path is fast, error path is not
 -------------------------------------
