@@ -1,15 +1,15 @@
 Userspace NIC driver experiment for low latency workloads
 ==============================================
-This repository contains proof of concept ixgbe driver for the architecture detailed on
-'architectural design'.
+This repository contains proof of concept ixgbe driver for the architecture detailed in
+`Architectural design principles`_.
 Even the architecture is designed for mlx5 driver, proof of concept driver is leveraging 82599.
 
 Some of the reasons are:
 
 Direct Register Manipulation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Instead of sending commands to "mailbox[1]", direct register manipulation considered more transparent when it comes to understand & optimize on low level.
-As a trade-off, even this may mean compromising latency, 82599 is preferred because modern NICs possess multilayered abstractions.
+Instead of sending commands to "mailbox[1]", direct register manipulation is considered more transparent when it comes to understanding & optimizing at a low level.
+As a trade-off, while direct register manipulation may have slightly higher latency than mailbox commands, 82599 is preferred because modern NICs possess multilayered abstractions that obscure low-level behavior.
 
 Defined hardware behavior & Transparent documentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -27,7 +27,7 @@ Architectural design principles
 Radical Cropping
 ^^^^^^^^^^^^^^^^^
 
-This title includes keeping everything that doesn't help us achieve the goal out. For example In this proof of concept on icmp protocol, checksums are not validated upon ingress, and  will not be recalculated on replying. Instead, RFC 1624 is used.
+This title includes keeping everything that doesn't help us achieve the goal out. For example, in this proof of concept using the ICMP protocol, checksums are not validated upon ingress and will not be recalculated when replying. Instead, RFC 1624 is used.
 Destination IP is not going to be checked. Instead, the logic will just switch destination and source IP's. As can be seen in these points, a new packet will not be generated. Instead, received packet will be edited and bumped to wire as soon as possible.
 
 Inlining Workload with Driver
