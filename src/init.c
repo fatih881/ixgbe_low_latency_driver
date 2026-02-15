@@ -34,7 +34,7 @@ int ixgbe_probe(const struct hw* hw) {
     usleep(delay);
     if (likely(delay < 1000)) delay *= 2;
   }
-  if (unlikely(i == 50)) return -ENODEV;
+  return -ENODEV;
 eeprom_ok:
   /* ~20.47 ms at total. +~20ms means malfunctional behavior. */
   delay = 10;
@@ -44,7 +44,7 @@ eeprom_ok:
     usleep(delay);
     if (likely(delay < 1000)) delay *= 2;
   }
-  if (unlikely(i == 50)) return -ETIMEDOUT;
+  return -ETIMEDOUT;
 dmaiok:;
   return 0;
 }
