@@ -101,6 +101,9 @@
 
 /* Auto Negotiation Control Register */
 #define IXGBE_AUTOC 0x042A0
+/* Link Mode Select */
+#define IXGBE_AUTOC_LMS_SHIFT 13
+#define IXGBE_AUTOC_LMS_MASK (0x7 << IXGBE_AUTOC_LMS_SHIFT)
 
 /* Link Status Register */
 #define IXGBE_LINKS 0x042A4
@@ -215,6 +218,36 @@
 
 /* DCA Rx Control Register */
 #define IXGBE_DCA_RXCTRL 0x0100C
+
+/* Semaphore Register */
+#define IXGBE_SWSM 0x10140
+#define IXGBE_SWSM_SMBI (1 << 0)
+#define IXGBE_SWSM_SWESMBI (1 << 1)
+#define IXGBE_SWSM_MASK (IXGBE_SWSM_SMBI | IXGBE_SWSM_SWESMBI)
+
+/* Software _ Firmware Synchronization */
+#define IXGBE_SW_FW_SYNC 0x10160
+
+#define IXGBE_SWFW_EEP_SM    (1 << 0)
+#define IXGBE_SWFW_PHY0_SM   (1 << 1)
+#define IXGBE_SWFW_PHY1_SM   (1 << 2)
+#define IXGBE_SWFW_MAC_CSR_SM (1 << 3)
+#define IXGBE_SWFW_FLASH_SM  (1 << 4)
+#define IXGBE_FWFW_EEP_SM    (1 << 5)
+#define IXGBE_FWFW_PHY0_SM   (1 << 6)
+#define IXGBE_FWFW_PHY1_SM   (1 << 7)
+#define IXGBE_FWFW_MAC_CSR_SM (1 << 8)
+#define IXGBE_FWFW_FLASH_SM  (1 << 9)
+
+typedef enum {
+    SW_EEP_SM     = (1 << 0),
+    SW_PHY_SM0    = (1 << 1),
+    SW_PHY_SM1    = (1 << 2),
+    SW_MAC_CSR_SM = (1 << 3),
+    SW_FLASH_SM   = (1 << 4)
+} ixgbe_swfw_sync_t;
+#define IXGBE_SWFW_TO_FW_MASK(sw_mask) ((sw_mask) << 5)
+
 static inline u32 ixgbe_read_reg(const struct hw* hw, const u32 reg) {
   return *((volatile u32*)(hw->hw_addr + reg));
 }
@@ -223,6 +256,15 @@ static inline void ixgbe_write_reg(const struct hw* hw, const u32 reg,
                                    const u32 val) {
   *((volatile u32*)(hw->hw_addr + reg)) = val;
 }
+/* This read operation flushes the PCI write buffer before polling.
+* Status offset is selected because it'll not affect firmware state.
+* Read operation of some bit offsets may change firmware state machine:
+* e.g. Reading semaphore-related bits may processed as semaphore request.
+*/
+#define IXGBE_WRITE_FLUSH(hw) (void)ixgbe_read_reg((hw), IXGBE_STATUS)
+
 int ixgbe_probe(const struct hw* hw);
+int semaphore_acquire(const struct hw* hw,ixgbe_swfw_sync_t);
+int semaphore_release(const struct hw* hw,ixgbe_swfw_sync_t);
 
 #endif
